@@ -288,7 +288,7 @@ function complete($args) {
   } else {
     $realdir = $dir.'/';
   }
-  $name = basename($args[2]);
+  $name = basename(filter_arrayvalue_str($args, 2));
   $list = scandir($dir);
   
   $candidates = array();
@@ -409,7 +409,7 @@ function implodePath($path) {
 class ShellSession {
   private $cwd;
   
-  public function __construct($cwd) {
+  private function __construct($cwd) {
     $this->cwd = $cwd;
   }
   
@@ -430,6 +430,27 @@ class ShellSession {
       $this->cwd = $path;
       return true;
     }
+  }
+  
+  static public function get() {
+    if (array_key_exists('shell', $_SESSION)) {
+      $shell = &$_SESSION['shell'];
+      if (is_dir($shell->cwd)) {
+        if (!chdir($shell->cwd)) {
+          fatal_error('kann Arbeitsverzeichniss nicht setzen');
+        }
+      } else {
+        fatal_error('aktuelles Arbeitsverzeichnis ('.$shell->cwd.') nicht vorhanden');
+      }
+    } else {
+      $cwd = getcwd();
+      if (!$cwd) {
+        fatal_error('kein Zugriff auf aktuelles Arbeitsverzeichniss möglich');
+      }
+      $_SESSION['shell'] = new ShellSession($cwd); 
+      $shell = &$_SESSION['shell']; 
+    }
+    return $shell;
   }
 }
 
@@ -549,6 +570,14 @@ class Authorization {
   public static function get_user() {
     return self::$auth ? self::$user : '';
   }
+}
+
+
+function login() {
+  return
+    'Welcome at LynxShell @ '.$_SERVER['SERVER_NAME']."\n".
+    'Server: '.$_SERVER['SERVER_SOFTWARE']."\n".
+    'PHP: '.phpversion();
 }
 
 ?>

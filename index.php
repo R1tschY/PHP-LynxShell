@@ -10,7 +10,9 @@
 include("classes.php");
 
 Authorization::init('s');
-
+if (Authorization::is_auth()) {
+  $shell = ShellSession::get();
+}
 ?>
 
 <!doctype html>
@@ -38,7 +40,6 @@ if (!Authorization::is_auth()) {
 	echo '
 <form id="login" autocomplete="off">
   <fieldset>
-    <input type="hidden" name="cmd" value="login">
     <pre><label for="user">username:</label><input type="text" name="user" id="user" /></pre>
     <pre id="pwdline" style="display:none"><label for="pwd">password:</label><input type="password" name="pwd" id="pwd" /></pre>
   </fieldset>
@@ -49,7 +50,11 @@ if (!Authorization::is_auth()) {
       <form action="javascript:void(0)" id="shell" autocomplete="off" <?php if (!Authorization::is_auth()) {echo 'style="display:none"';} ?>>
         <fieldset>
           <pre><label for="cmdln" id="shellname"><?php 
-            if (Authorization::is_auth()) {echo $_SESSION['shell']->getPrompt();}
+            if (Authorization::is_auth()) {
+              if (filter_arrayvalue_str($_POST, 'cmd') == 'login')
+                echo login()."\n";
+              echo $shell->getPrompt();
+            }
           ?></label><input name="cmd" type="text" id="input" /></pre>
         </fieldset>
       </form>
@@ -59,9 +64,8 @@ if (!Authorization::is_auth()) {
     </footer>
   </div> 
 
-  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-  <script>window.jQuery || document.write('<script src="js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
   <!-- scripts concatenated and minified via ant build script-->
   <script defer src="js/plugins.js"></script>

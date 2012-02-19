@@ -1,4 +1,11 @@
 <?php
+/*  PHP LynxShell
+ *   - PHP command line shell 
+ *  Copyright (C) 2012 Richard Liebscher
+ *
+ *  License: GNU General Public License Version 3
+ */
+ 
 include("classes.php");
 
 Authorization::init('s');

@@ -1,7 +1,6 @@
 
  * Authorization::createpasswd() mit Salt
  * complete über glob oder fnmatch
- * logout über Contol+D
  * commando über Control+C abbrechen
  * Commandos:
     - cp

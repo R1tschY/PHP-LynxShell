@@ -50,26 +50,122 @@ $(document).ready(function(){
     $form.remove();
   }
   
+  var clearAndExec = function(cmd, xdata) {
+    $form = $('<form>',{
+      method: 'POST',
+      action: '.'
+    }).css('display', 'none')
+    $('body').append($form)
+    data = $.extend({
+      'cmd': cmd,
+      'cw':  consolewidth
+    }, xdata)
+    $.each(data, function (key, value) {
+      $form.append($('<input>', {
+        type: 'hidden',
+        name: key,
+        value: value
+      }))
+    })
+    $form.submit();
+  }
+  
   var jscmd = function(output) {
     $shell.before('<pre class="shell">' + $shellname.html() + $input.val() + '</pre>')
     printOutput(output)
   }
   
+  var execCmd = function(cmd) {
+    var args = cmd.split(/\s/g)
+  
+    // letzten Befehl statisch setzen
+    $shell.before('<pre class="shell">' + $shellname.html() + cmd + '</pre>')
+    $shell.hide()
+  
+    if (args[0] == 'edit') {     
+      openTab('editor.php', {'file': args[1]})   
+      resetShell()
+      return ;
+    }
+    if (args[0] == 'clear') {    
+      location.href = '.'
+      return;
+    }
+    if (args[0] == '' || args.length == 0) {    
+      //jscmd('')
+      resetShell()
+      return;
+    }
+  
+    // Anfrage stellen
+    $.ajax({
+      type: "POST",
+      url: "shell.php",
+      data: {
+        cmd: cmd,
+        cw:  consolewidth, // ClientWidth/ConsoleWidth
+        'i': false
+      },
+      success: function(data) {
+        if (!data.status) { // JSON Data?
+          data = {0:{
+            c: 'o',
+            m: 'php error: ' + data
+          }}
+        }
+        
+        printOutput(data)          
+        
+        if (data.status == 'NOT_AUTHORIZED') {
+          location.href = '.'            
+          return ;
+        }
+      
+        $shellname.html(data.shell)
+        
+        resetShell()
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        if (textStatus != null) {
+          var errormsg;
+          if (textStatus == 'parsererror') {
+            errormsg = 'php error: ' + jqXHR.responseText
+          } else {
+            errormsg = 'ajax error: ' + textStatus
+          }
+          printOutput({0:{
+            c: 'o',
+            m: errormsg
+          }})
+        }
+        
+        resetShell()
+      }        
+    })
+  }
+  
   var show_php_errors = function(output) {
+    var errors = {}
+    var noerrors = output
+    var j = 0, k = 0
     var out
-    var msgs = false
-    for (var i = 0; output[i] != undefined; i++) {
+    
+    for (var i = 0; i in output; i++) {
       out = output[i]
       if (out.c != 'o') {
-        $shell.before('<pre class="channel_'+out.c+'">'+out.m+'</pre>') 
-        msgs = true       
-      } 
+        errors[j++] = out
+      } else {
+        delete noerrors[i]
+        noerrors[k++] = out      
+      }
     }
     
-    if (msgs) {
+    if (j > 0) {
       $shell.before('<pre class="shell">' + $shellname.html() + $input.val() + '</pre>')
-      printOutput(output)
+      printOutput(errors)
     }
+    
+    return noerrors;
   }
   
   var setInput = function(value) {
@@ -105,26 +201,14 @@ $(document).ready(function(){
     $('#pwd').keydown(function(event) {
       if (event.keyCode == '13') {
         event.preventDefault()    
-
-        $.ajax({
-          type: "POST",
-          url: "shell.php",
-          data: $login.serialize(),
-          success: function(data){
-            if (data.status && data.status == 'NOT_AUTHORIZED') {
-              location.href = '.'
-              return;
-            }
-          
-            $shellname.html(data.shell)  
-
-            printOutput(data);            
-            
-            resetShell()
-          }
-          
-          //TODO: error
-        });
+        
+        var a = $login.serializeArray()
+        var o = {}
+        for (var i = 0; i < a.length; i++) {
+          o[a[i].name] = a[i].value
+        }
+        
+        clearAndExec('login', o)
       }
     });
   }
@@ -136,11 +220,20 @@ $(document).ready(function(){
   })
  
   $input.change(function(event) {
-    $input[0].size = Math.max(12,$input.val().length+1)
+    $input[0].size = Math.max(12,$input.val().length+1) // TODO: does nothing
     complete_candidates = null
   })
   
   $input.keydown(function(event) {
+    if (event.ctrlKey) {
+      switch (event.keyCode) {
+      case 68: /* Shift + d */
+        event.preventDefault()
+        execCmd('logout')
+        return;
+      }
+    }
+  
     switch (event.keyCode) {
     case 13: /* ENTER */
       event.preventDefault()
@@ -155,72 +248,8 @@ $(document).ready(function(){
       history_index = -1
       currentcmd = ''     
       
-      // letzten Befehl statisch setzen
-      $shell.before('<pre class="shell">' + $shellname.html() + value + '</pre>')
-      $shell.hide()
+      execCmd(value)
       
-      // JS commands
-      var args = value.split(" ")
-      if (args[0] == 'edit') {     
-        openTab('editor.php', {'file': args[1]})   
-        resetShell()
-        break ;
-      }
-      if (args[0] == 'clear') {    
-        location.href = '.'
-        break;
-      }
-      if (args[0] == '' || args.length == 0) {    
-        //jscmd('')
-        resetShell()
-        break;
-      }
-     
-      // Anfrage stellen
-      $.ajax({
-        type: "POST",
-        url: "shell.php",
-        data: {
-          cmd: $input.val(),
-          cw:  consolewidth, // ClientWidth/ConsoleWidth
-          'i': false
-        },
-        success: function(data) {
-          if (!data.status) { // JSON Data?
-            data = {0:{
-              c: 'o',
-              m: 'php error: ' + data
-            }}
-          }
-          
-          printOutput(data)          
-          
-          if (data.status == 'NOT_AUTHORIZED') {
-            location.href = '.'            
-            return ;
-          }
-        
-          $shellname.html(data.shell)
-          
-          resetShell()
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-          if (textStatus != null) {
-            var errormsg;
-            if (textStatus == 'parsererror') {
-              errormsg = 'php error: ' + jqXHR.responseText
-            } else {
-              errormsg = 'ajax error: ' + textStatus
-            }
-            printOutput({0:{
-              c: 'o',
-              m: errormsg
-            }})
-          }
-          
-          resetShell()
-        }        
-      })
       break;
       
     case 38: /* UP */
@@ -278,13 +307,8 @@ $(document).ready(function(){
           'i':   true
         },
         success: function(data) {
-          show_php_errors(data)
+          data = show_php_errors(data)
           
-          if (!data.result) {
-            flash()
-            return ;
-          }
-        
           if (data.status) {
             if (data.status == 'NOT_AUTHORIZED') {
               location.href = '.'
@@ -295,10 +319,12 @@ $(document).ready(function(){
             } else if (data.status == 'MORE_FOUND') {
               complete_candidates = data
               flash()
+              return;
             }
           }        
           var value = $input.val()
           setInput(value.substring(0, value.lastIndexOf(' ')+1) + data.result)
+          updateInputLength()
         },
         error: function(jqXHR, textStatus, errorThrown) {
           if (textStatus != null) {
@@ -315,7 +341,8 @@ $(document).ready(function(){
       break;      
     }
     
-    updateInputLength();
+    updateInputLength()
+    complete_candidates = null
   })
 })
 
