@@ -3,10 +3,9 @@
 */
 
 $(document).ready(function(){
-  var $input = $('#input')
+  var $input = $('.cmdln_input')
   var $shell = $('#shell')
   var $shellname = $('#shellname')
-  var $login = $('#login');
   var $body  = $("body");
   var history = new Array()
   var history_index = -1
@@ -187,22 +186,18 @@ $(document).ready(function(){
     return Math.floor($shell.width() / charwidth)
   }  
   var consolewidth = getConsoleWidth()
+  
+  $input.focus()
     
-  // Login notwendig
-  if ($login.length > 0) {    
-    $('#user').focus().keydown(function(event) {
-      if (event.keyCode == '13') {
-        event.preventDefault()    
-        $('#pwdline').show()
-        $('#pwd').focus();
-      }
-    })
+  // Login notwendig?
+  if ($('.login_bgd').css('display') != 'none') {    
+    $('#user').focus();
     
     $('#pwd').keydown(function(event) {
       if (event.keyCode == '13') {
         event.preventDefault()    
         
-        var a = $login.serializeArray()
+        var a = $('.login').serializeArray()
         var o = {}
         for (var i = 0; i < a.length; i++) {
           o[a[i].name] = a[i].value
@@ -212,8 +207,6 @@ $(document).ready(function(){
       }
     });
   }
-  
-  $input.focus()
   
   $('#main').click(function() {
     //$input.focus()
