@@ -166,11 +166,6 @@ $(document).ready(function(){
     return noerrors;
   }
   
-  var setInput = function(value) {
-    //$input.val(value)
-    //$input[0].size = Math.max(12,$input.val().length+1)
-  }
-  
   var printOutput = function(output) {
     var out;
     var e;
@@ -312,7 +307,7 @@ $(document).ready(function(){
             }
           }        
           var value = $input.val()
-          setInput(value.substring(0, value.lastIndexOf(' ')+1) + data.result)
+          $input.val(value.substring(0, value.lastIndexOf(' ')+1) + data.result)
           updateInputLength()
         },
         error: function(jqXHR, textStatus, errorThrown) {
