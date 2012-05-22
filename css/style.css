@@ -51,7 +51,7 @@ a:hover, a:active { outline: 0; }
    ========================================================================== */
 
 /* Redeclare monospace font family: h5bp.com/j */
-pre, code, kbd, samp { font-family: "Consolas","Droid Sans Mono","Courier New",Monospace; font-size: 1em; }
+pre, code, kbd, samp { font-family: "Ubuntu Mono","Consolas","Droid Sans Mono","Courier New",Monospace; font-size: 1em; }
 
 /* Improve readability of pre-formatted text in all browsers */
 pre { white-space: pre; white-space: pre-wrap; word-wrap: break-word; margin: 0; }
@@ -123,8 +123,9 @@ input:invalid, textarea:invalid { background-color: #f0dddd; }
 
 html, body {
   line-height: 1;
-  overflow: hidden;
   height: 100%;
+  overflow-x: hidden;
+  background: #000;
 }
 
 * {
@@ -140,17 +141,16 @@ html, body {
 }
 
 .cmdln {
-  position: absolute;
-  bottom: 0;
+/*  position: absolute;
+  bottom: 0;*/
   width: 100%;
   line-height: 1.5em;
-  text-align: center;
   background: #8B8878;
   padding: 2px;
 }
 
 .cmdln_input {
-  font-family: "Consolas","Droid Sans Mono","Courier New",Monospace;
+  font-family: "Ubuntu Mono","Consolas","Droid Sans Mono","Courier New",Monospace;
   padding: 2px;
 }
 
@@ -158,37 +158,51 @@ html, body {
 .no-js #jsnotice { display: block; }
 
 #container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  background: #A9A9A9;
+  background: #000;
 }
 
 pre input {
-  font-family: "Consolas","Droid Sans Mono","Courier New",Monospace;
+  font-family: "Ubuntu Mono","Consolas","Droid Sans Mono","Courier New",Monospace;
   background-color: #ddd;
 }
 
 #edit {
-  font-family: "Consolas","Droid Sans Mono","Courier New",Monospace;
+  font-family: "Ubuntu Mono","Consolas","Droid Sans Mono","Courier New",Monospace;
 }
 
 #shellname {
 }
 
-.channel_e {
+.shell_cmd {
+  width: 100%;
+  padding: 2px;
+  margin-bottom: 2px;
+  background-color: #ccc;
+  color: #000;
+}
+
+#output {
+
+}
+
+.cmd_output {
+  margin-left: 1em;
+  background-color: #A9A9A9;
+}
+
+.output_e {  
   color: #FF3333;
 }
 
-.channel_w {
+.output_w {
   color: #FFAA33;
 }
 
-.channel_n {
+.output_n {
   color: #B3B3B3;
 }
 
-.channel_o {
+.output_o {
   color: #000;
 }
 

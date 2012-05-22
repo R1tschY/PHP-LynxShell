@@ -6,6 +6,7 @@ $(document).ready(function(){
   var $input = $('.cmdln_input')
   var $shell = $('#shell')
   var $shellname = $('#shellname')
+  var $output = $('#output')
   var $body  = $("body");
   var history = new Array()
   var history_index = -1
@@ -20,11 +21,11 @@ $(document).ready(function(){
   }
   
   var updateInputLength = function() {
-    var charwidth = $shellname.width() / $shellname.text().length
+    /*var charwidth = $shellname.width() / $shellname.text().length
     var width = ($input.val().length + 5) * charwidth;
     
     if (width < 20) width = 20;
-    $input.width(width);
+    $input.width(width);*/
   }
   
   var flash = function() {
@@ -70,16 +71,14 @@ $(document).ready(function(){
   }
   
   var jscmd = function(output) {
-    $shell.before('<pre class="shell">' + $shellname.html() + $input.val() + '</pre>')
+    $output.append('<pre class="shell_cmd">' + $shellname.html() + $input.val() + '</pre>')
     printOutput(output)
   }
   
   var execCmd = function(cmd) {
     var args = cmd.split(/\s/g)
   
-    // letzten Befehl statisch setzen
-    $shell.before('<pre class="shell">' + $shellname.html() + cmd + '</pre>')
-    $shell.hide()
+    $output.append('<pre class="shell_cmd">' + $shellname.html() + cmd + '</pre>')
   
     if (args[0] == 'edit') {     
       openTab('editor.php', {'file': args[1]})   
@@ -168,17 +167,19 @@ $(document).ready(function(){
   }
   
   var setInput = function(value) {
-    $input.val(value)
-    $input[0].size = Math.max(12,$input.val().length+1)
+    //$input.val(value)
+    //$input[0].size = Math.max(12,$input.val().length+1)
   }
   
   var printOutput = function(output) {
     var out;
     var e;
+    $o = $('<div class="cmd_output"></div>')
     for (var i = 0; output[i] != undefined; i++) {
       out = output[i]
-      $shell.before($('<pre class="channel_'+out.c+'" />').text(out.m))      
+      $o.append($('<pre class="output_'+out.c+'" />').text(out.m))      
     }
+    $o.appendTo($output)
   }
   
   var getConsoleWidth = function() {
@@ -212,11 +213,6 @@ $(document).ready(function(){
     //$input.focus()
   })
  
-  $input.change(function(event) {
-    $input[0].size = Math.max(12,$input.val().length+1) // TODO: does nothing
-    complete_candidates = null
-  })
-  
   $input.keydown(function(event) {
     if (event.ctrlKey) {
       switch (event.keyCode) {

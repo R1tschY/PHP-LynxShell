@@ -45,10 +45,11 @@ EOS;
     <header>
 
     </header>
-    <div id="main" role="main">sdfghjklöä </div>
+    <div id="output" role="main"></div>
     <footer class="cmdln">
+      <div id="shellname"></div>
       <form action="javascript:void(0)" id="shell" autocomplete="off">
-      <input name="cmd" type="text" class="cmdln_input input" />
+        <input name="cmd" type="text" class="cmdln_input input" />
       </form>	 
     </footer>
   </div> 
