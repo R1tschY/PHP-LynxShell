@@ -58,6 +58,7 @@ case 'exit':
   Answer::send();
   
 case 'cd':
+  if (empty($args[1])) $args[1] = '~';
   $path = expandPath($args[1]);
   if (!$shell->setCwd($path)) {  
     Answer::addOutput('e', $path.' ist kein gültiges Verzeichnis');
