@@ -1,6 +1,8 @@
 
  * Authorization::createpasswd() mit Salt
  * complete über glob oder fnmatch
+ * complete in der Mitte von Befehl Möglich machen
+ * (bessere) Behandlung wenn kein HOME Verzeichnis
  * commando über Control+C abbrechen
  * Commandos:
     - cp
@@ -11,3 +13,4 @@
     - download (downl)
     - passwd
     - alias
+    - view (Bilder, HTML, ...)

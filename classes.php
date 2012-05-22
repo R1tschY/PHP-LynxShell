@@ -15,7 +15,7 @@ include('config.php');
 function var_dup($var) {
   if (is_bool($var)) {
     $dup = $var?'TRUE':'FALSE';
-  } else if (is_bool($var)) {
+  } else {
     $dup = print_r($var, true);
   }
 
@@ -222,6 +222,20 @@ function strarray_find_prefix(&$data) {
   return $prefix;
 }
 
+function strarray_remove_prefix(&$data, $prefix) {
+  $cnt = strlen($prefix);
+  foreach ($data as &$value) {
+    $value = substr($value, $cnt);
+  }
+}
+
+function strarray_remove_suffix(&$data, $suffix) {
+  $cnt = strlen($suffix);
+  foreach ($data as &$value) {
+    $value = substr($value, 0, -$cnt);
+  }
+}
+
 function is_prefix($a, $prefix) {
   $alen = strlen($a);
   $prelen = strlen($prefix);
@@ -243,6 +257,7 @@ function is_suffix($a, $suffix) {
 function print_in_table(&$data, $maxlen) {
   $cw = filter_arrayvalue_int($_POST, 'cw');
   if ($cw !== FALSE) {
+    if ($cw < 10) $cw = 10;
     $colwidth = $maxlen + 2;
     $items = count($data);
     $cols = intval($cw / $colwidth);
@@ -272,6 +287,7 @@ function print_in_table(&$data, $maxlen) {
 ////////////////////////////////////////////////////////////////////////////////
 //   complete
 ////////////////////////////////////////////////////////////////////////////////
+/*
 function complete($args) {
   $dir = filter_arrayvalue_str($args, 2);
   if ($dir !== FALSE) {
@@ -321,6 +337,58 @@ function complete($args) {
     Answer::setResult(strarray_find_prefix($candidates));
     sort($candidates, SORT_STRING);
     print_in_table($candidates, $maxlen);
+  }
+  Answer::send();
+}*/
+
+function _dirname($path) {
+  $pos = strrpos($path, '/');
+  if ($pos === false) {
+    return '';
+  } else {
+    return substr($path, 0, $pos);
+  }
+}
+
+function complete($args) {
+  $cmd = $args[1]; 
+  $file = filter_arrayvalue_str($args, 2, '');
+  
+  // FIXME: escape * [] {}
+   
+  if ($cmd == 'cmd') {
+    if ($file === FALSE) $file = '';
+    $prefix = dirname(__FILE__).'/bin/';
+    $candidates = glob($prefix.$file.'*.php');   
+    strarray_remove_suffix($candidates, '.php');
+    strarray_remove_prefix($candidates, $prefix);
+    $prefix = '';
+    
+  } else {
+    $prefix = _dirname($file);
+  
+    if ($cmd == 'dir') {
+      $candidates = glob($file.'*', GLOB_MARK | GLOB_ONLYDIR);                        
+    } else {
+      $candidates = glob($file.'*', GLOB_MARK);
+    }
+    
+    if (!empty($prefix)) {
+      $prefix .= '/';
+      strarray_remove_prefix($candidates, $prefix);
+    }
+  }
+  
+  if (count($candidates) < 1) {
+    Answer::setStatus('NOT_FOUND');
+    
+  } elseif (count($candidates) == 1) {
+    Answer::setResult($prefix.$candidates[0]);
+    
+  } elseif (count($candidates) > 1) {
+    Answer::setStatus('MORE_FOUND');
+    Answer::setResult($prefix.strarray_find_prefix($candidates));
+    print_in_table($candidates, 10); // FIXME
   }
   Answer::send();
 }
