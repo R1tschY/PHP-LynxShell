@@ -197,7 +197,7 @@ function filter_arrayvalue_str($array, $key, $default = FALSE) {
   if (array_key_exists($key, $array)) {
     $value = $array[$key];
     if (!empty($value)) {
-      return $value;
+      return strval($value);
     }
   }  
   return $default;
