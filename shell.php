@@ -91,6 +91,18 @@ if (!preg_match('#^[a-zA-Z0-9_-]+$#', $cmd)) {
   Answer::send();
 }
 
+// expand arguments
+$tmp = array($args[0]);
+foreach (array_slice($args, 1) as $arg) {
+  $all = glob($arg);
+  if (!empty($all)) {
+    $tmp = array_merge($tmp, $all);
+  } else {
+    $tmp[] = $arg;
+  } 
+}
+$args = $tmp;
+
 // Befehl in bin/ Ordner finden
 $cmdfile = dirname(__FILE__).'/bin/'.$cmd.'.php';
 if (file_exists($cmdfile)) {
