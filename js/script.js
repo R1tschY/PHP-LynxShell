@@ -1,7 +1,12 @@
-/* Author: 
+/*  PHP LynxShell
+ *   - PHP command line shell 
+ *  Copyright (C) 2012 Richard Liebscher
+ *
+ *  License: GNU General Public License Version 3
+ */
 
-*/
 
+ 
 $(document).ready(function(){
   var $input = $('.cmdln_input')
   var $shell = $('#shell')
@@ -17,7 +22,7 @@ $(document).ready(function(){
     $input.val('')
     $shell.show()
     $input.focus()
-    $('body').scrollTo('max')
+    $body.scrollTo('max')
   }
   
   var updateInputLength = function() {
@@ -33,12 +38,12 @@ $(document).ready(function(){
   }
   
   var openTab = function(url, data) {
-    $form = $('<form>',{
+    var $form = $('<form>',{
       method: 'POST',
       action: url,
       target: '_blank'
     }).css('display', 'none')
-    $('body').append($form)
+    $body.append($form)
     $.each(data, function (key, value) {
       $form.append($('<input>', {
         type: 'hidden',
@@ -51,11 +56,11 @@ $(document).ready(function(){
   }
   
   var clearAndExec = function(cmd, xdata) {
-    $form = $('<form>',{
+    var $form = $('<form>',{
       method: 'POST',
       action: '.'
     }).css('display', 'none')
-    $('body').append($form)
+    $body.append($form)
     data = $.extend({
       'cmd': cmd,
       'cw':  consolewidth
@@ -68,6 +73,7 @@ $(document).ready(function(){
       }))
     })
     $form.submit();
+    $form.remove();
   }
   
   var jscmd = function(output) {
@@ -75,24 +81,76 @@ $(document).ready(function(){
     printOutput(output)
   }
   
+  var jscmds = {
+    edit: function(filename) {
+      openTab('editor.php', {'file': filename})   
+      resetShell()
+    },    
+    
+    clear: function() {
+      location.href = '.'
+    },
+    
+    dld: function(filename) {
+      var $o = $('<div class="cmd_output"></div>').appendTo($output)
+      var $progress = $('<pre class="output_o" />').appendTo($o).text('Download ist starting ...')
+
+      var xhr = new XMLHttpRequest();      
+      xhr.open("GET", "download.php?file=" + filename);
+      xhr.responseType = "blob";
+      xhr.addEventListener("progress", function() {
+        if(evt.lengthComputable) {
+          $('<pre class="output_o" />').appendTo($o).text('Progress: ' + evt.loaded + '/' + evt.total);
+        }
+      }, false);
+      xhr.onload = function() {
+        $('<pre class="output_o" />').appendTo($o).text('Finished Successful!');
+        
+        window.URL = window.URL || window.webkitURL;
+        var $form = $('<form>', {
+          method : 'GET',
+          target: '_blank',
+          action :  window.URL.createObjectURL(xhr.response),
+        }).css('display', 'none')
+        $body.append($form)
+        $form.submit(); 
+        $form.remove();
+      };
+      xhr.send();
+    },
+    
+    download: function(filename) {      
+      var $form = $('<form>', {
+        method : 'POST',
+        action : 'download.php'
+      }).css('display', 'none')
+      $form.append($('<input>', {
+        type : 'hidden',
+        name : 'file',
+        value : filename
+      }))
+      $body.append($form)
+      $form.submit(); 
+      $form.remove();
+    },
+
+  }
+  
   var execCmd = function(cmd) {
     var args = cmd.split(/\s/g)
   
     $output.append('<pre class="shell_cmd">' + $shellname.html() + cmd + '</pre>')
+    resetShell()
   
-    if (args[0] == 'edit') {     
-      openTab('editor.php', {'file': args[1]})   
-      resetShell()
-      return ;
-    }
-    if (args[0] == 'clear') {    
-      location.href = '.'
-      return;
-    }
     if (args[0] == '' || args.length == 0) {    
       //jscmd('')
       resetShell()
       return;
+    }
+    
+    if ((method = jscmds[args[0]])) {
+      method.apply(this, args.slice(1));
+      return ;
     }
   
     // Anfrage stellen
@@ -121,7 +179,7 @@ $(document).ready(function(){
       
         $shellname.html(data.shell)
         
-        resetShell()
+        $body.scrollTo('max')
       },
       error: function(jqXHR, textStatus, errorThrown) {
         if (textStatus != null) {
@@ -137,7 +195,7 @@ $(document).ready(function(){
           }})
         }
         
-        resetShell()
+        $body.scrollTo('max')
       }        
     })
   }
@@ -303,11 +361,12 @@ $(document).ready(function(){
             } else if (data.status == 'MORE_FOUND') {
               complete_candidates = data
               flash()
-              return;
+              if (!data.result) return;
             }
-          }        
-          var value = $input.val()
+          }   
+          var value = $input.val()     
           $input.val(value.substring(0, value.lastIndexOf(' ')+1) + data.result)
+          $input[0].selectionStart = $input[0].selectionEnd = $input.val().length
           updateInputLength()
         },
         error: function(jqXHR, textStatus, errorThrown) {
