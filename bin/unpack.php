@@ -1,62 +1,11 @@
 <?php
-/*
- *      PHP Datei.php
- *      
- *      Copyright 2009 Richard Liebscher <richard.liebscher@googlemail.com>
- *      
- *      This program is free software; you can redistribute it and/or modify
- *      it under the terms of the GNU General Public License as published by
- *      the Free Software Foundation; either version 2 of the License, or
- *      (at your option) any later version.
- *      
- *      This program is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *      GNU General Public License for more details.
- *      
- *      You should have received a copy of the GNU General Public License
- *      along with this program; if not, write to the Free Software
- *      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- *      MA 02110-1301, USA.
+/*  PHP LynxShell
+ *   - PHP command line shell 
+ *  Copyright (C) 2012 Richard Liebscher
+ *
+ *  License: GNU General Public License Version 3
  */
  
-define("BUFFER_SIZE", 4096);
-define("PERMISSIONS", 0777);
-
-/**
- * Create a directory structure recursively
- *
- * @author      Aidan Lister <aidan@php.net>
- * @version     1.0.2
- * @link        http://aidanlister.com/2004/04/recursively-creating-directory-structures/
- * @param       string   $pathname    The directory structure to create
- * @return      bool     Returns TRUE on success, FALSE on failure
- */
-function mkdirr($pathname, $mode = PERMISSIONS)
-{
-    // Check if directory already exists
-    if (is_dir($pathname) || empty($pathname)) {
-        return true;
-    }
-
-    // Ensure a file does not already exist with the same name
-    $pathname = str_replace(array('/', ''), DIRECTORY_SEPARATOR, $pathname);
-    if (is_file($pathname)) {
-        trigger_error('mkdirr() File exists', E_USER_WARNING);
-        return false;
-    }
-
-    // Crawl up the directory tree
-    $next_pathname = substr($pathname, 0, strrpos($pathname, DIRECTORY_SEPARATOR));
-    if (mkdirr($next_pathname, $mode)) {
-        if (!file_exists($pathname)) {
-            return mkdir($pathname, $mode);
-        }
-    }
-
-    return false;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // RAR
@@ -245,7 +194,7 @@ function unzip($file){
       if (strpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR) !== false) {
         $dir = dirname($name);
         if (!is_dir($dir)) {
-          @mkdirr($dir, PERMISSIONS, true) or lerror("Unable to create $dir");
+          @mkdir($dir, PERMISSIONS, true) or lerror("Unable to create $dir");
         }
       }
       zip_unpack_file($zip_entry, $name) or lerror("Unable to unpack $name");
