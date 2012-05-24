@@ -1,4 +1,10 @@
 <?php
+/*  PHP LynxShell
+ *   - PHP command line shell 
+ *  Copyright (C) 2012 Richard Liebscher
+ *
+ *  License: GNU General Public License Version 3
+ */
 
 $opt = parse_cmdln($args);
 if (!array_key_exists(0, $opt)) {

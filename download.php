@@ -11,6 +11,9 @@
  *   - DownThemAll! gives Server-Error when restarting large file download
  *   - multi etag support
  */
+ 
+// Disable Error Logging
+error_reporting(0);
 
 include("classes.php");
 
@@ -185,8 +188,8 @@ if (!Authorization::is_auth()) {
   error_403();
 }
 
-// Disable Error Logging
-error_reporting(0);
+// get shell context (e.x. current directory)
+ShellSession::get();
 
 ////////////////////////////////////////////////////////////////////////////////
 // Get arguments

@@ -1,5 +1,12 @@
 <?php
 
+/*  PHP LynxShell
+ *   - PHP command line shell 
+ *  Copyright (C) 2012 Richard Liebscher
+ *
+ *  License: GNU General Public License Version 3
+ */
+
 function remove_file($path) {
   if (is_writeable($path)) {
     @unlink($path) or lfputs('e', $path.': Löschen nicht möglich');
@@ -42,7 +49,6 @@ function remove_dir_recursive($path) {
 ////////////////////////////////////////////////////////////////////////////////
 
 $opt = new CmdlnOptions($args);
-
 $files = $opt->getArguments();
 if (count($files) < 1) {
   lerror($args[0].': fehlender Operand');
@@ -69,7 +75,5 @@ if ($opt->isOptionSet('r', 'recursive')) {
     }
   }
 }
-
-
 
 ?>
