@@ -44,6 +44,36 @@ function print_var($var) {
   return $dup;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//   File/Size Utils
+////////////////////////////////////////////////////////////////////////////////
+
+function return_bytes($val) {
+  $val = trim($val);
+  $last = strtolower($val[strlen($val)-1]);
+  switch($last) {
+  case 'g':
+    $val *= 1024;
+  case 'm':
+    $val *= 1024;
+  case 'k':
+    $val *= 1024;
+  }
+
+  return $val;
+}
+
+function byte_size_string($val) {
+  if ($val < 1024) {
+    return $val . ' B';
+  } else if ($val < 1024*1024) {
+    return $val . 'kB';
+  } else if ($val < 1024*1024*1024) {
+    return $val . 'MB';
+  } else {
+    return $val . 'GB';
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //   Error Handling
@@ -442,8 +472,8 @@ class Env {
     self::$disable_functions = explode(',', ini_get('disable_functions'));    
   }
   
-  public static function areFunctionsAvailable($funcs) {
-    return count(array_intersect(self::$disable_functions, $funcs)) == 0;
+  public static function areFunctionsAvailable() {
+    return count(array_intersect(self::$disable_functions, func_get_args())) == 0;
   }
   
   public static function getHome() { return self::$home; }
@@ -638,14 +668,6 @@ class Authorization {
   public static function get_user() {
     return self::$auth ? self::$user : '';
   }
-}
-
-
-function login() {
-  return
-    'Welcome at LynxShell @ '.$_SERVER['SERVER_NAME']."\n".
-    'Server: '.$_SERVER['SERVER_SOFTWARE']."\n".
-    'PHP: '.phpversion();
 }
 
 ?>

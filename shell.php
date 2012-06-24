@@ -43,51 +43,14 @@ $shell = ShellSession::get();
 $args = preg_split("/[\s]+/", $cmdln);
 $cmd = &$args[0];
 
-// buildin commands
-switch ($cmd) {
-case 'login': 
-  Answer::addOutput('o', login());
-  Answer::send();
-  
-case 'logout':
-case 'exit':
-  if (!$intern) History::add($cmdln);
-  Authorization::logout();
-  Answer::addOutput('o', 'logout');
-  Answer::setStatus('NOT_AUTHORIZED');
-  Answer::send();
-  
-case 'cd':
-  if (empty($args[1])) $args[1] = '~';
-  $path = expandPath($args[1]);
-  if (!$shell->setCwd($path)) {  
-    Answer::addOutput('e', $path.' ist kein gültiges Verzeichnis');
-  }
-  if (!$intern) History::add($cmdln);
-  Answer::send();
-  
-case 'pwd':
-  if (!$intern) History::add($cmdln);
-  Answer::addOutput('o', $_SESSION['shell']->getCwd());
-  Answer::send();
-  
-case '':
-  Answer::addOutput('o', '');
-  Answer::send();
-  
-case 'history':
-  if (!$intern) History::add($cmdln);
-  Answer::addOutput('o', implode("\n", $_SESSION['history']));
-  Answer::send(); 
-  
-case 'complete':
-  if (!$intern) History::add($cmdln);
-  complete($args);  
-}
-
 // filter 'eval' commands:
 if (!preg_match('#^[a-zA-Z0-9_-]+$#', $cmd)) {
   Answer::addOutput('o', $cmd.': command not found');
+  Answer::send();
+}
+
+if (empty($cmd)) {
+  Answer::addOutput('o', '');
   Answer::send();
 }
 
@@ -103,17 +66,10 @@ foreach (array_slice($args, 1) as $arg) {
 }
 $args = $tmp;
 
-// Befehl in bin/ Ordner finden
-$cmdfile = dirname(__FILE__).'/bin/'.$cmd.'.php';
-if (file_exists($cmdfile)) {
-  include($cmdfile);
-  if (!$intern) History::add($cmdln);
-  Answer::send();
-  return ;
-} else {
-  Answer::addOutput('o', $cmd.': command not found');
-  Answer::send();
-  return ;
-}
+include("commands.php");
+
+Commands::call($cmd, $args);
+
+Answer::send();
 
 ?>

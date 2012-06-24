@@ -12,6 +12,9 @@ include("classes.php");
 Authorization::init('s');
 if (Authorization::is_auth()) {
   $shell = ShellSession::get();
+  $shellname = $shell->getPrompt();
+} else {
+  $shellname = '>';
 }
 ?>
 
@@ -20,7 +23,7 @@ if (Authorization::is_auth()) {
 <head>
   <meta charset="utf-8">
 
-  <title>PHP LynxShell</title>
+  <title>PHP Lynx Shell</title>
   <meta name="description" content="">
   <meta name="author" content="r1tschy">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -43,11 +46,11 @@ EOS;
 <body>
   <div id="container">
     <header>
-
+    <h1>Lynx Shell</h1>
     </header>
     <div id="output" role="main"></div>
     <footer class="cmdln">
-      <div id="shellname"></div>
+      <span id="shellname"><?php echo $shellname; ?></span>
       <form action="javascript:void(0)" id="shell" autocomplete="off">
         <input name="cmd" type="text" class="cmdln_input input" />
       </form>	 
@@ -57,15 +60,20 @@ EOS;
   <table class="login_bgd">
     <td class="hbox">
     <div class="login_dialog">
-      <div class="login_form">
+      <h1>Lynx Shell</h1>
+      <br />
 	    <form class="login" autocomplete="off">
-        <label for="user">User:</label><br />
-        <input type="text" name="user" id="user" class="input" /><br />
-        <br />
-        <label for="pwd">Password:</label><br />
-        <input type="password" name="pwd" id="pwd" class="input" /><br />
+	      <table>
+	      <tr>
+          <td><label for="user">User:</label></td>
+          <td><input type="text" name="user" id="user" class="input" /></td>
+        </tr>
+        <tr>
+          <td><label for="pwd">Password:</label></td>
+          <td><input type="password" name="pwd" id="pwd" class="input" /></td>
+        </tr>
+        </table>
       </form>
-      </div>
     </div>
     </td>
   </table>

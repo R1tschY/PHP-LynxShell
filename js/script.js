@@ -91,7 +91,7 @@ $(document).ready(function(){
       location.href = '.'
     },
     
-    dld: function(filename) {
+    download2: function(filename) {
       var $o = $('<div class="cmd_output"></div>').appendTo($output)
       var $progress = $('<pre class="output_o" />').appendTo($o).text('Download ist starting ...')
 
@@ -136,6 +136,55 @@ $(document).ready(function(){
 
   }
   
+  var sendCmd = function(cmd, options) {
+    var defaults = {
+      intern: true,
+      data: {},
+      success: function(data){},
+      error: function(msg){}
+    }
+    var opts = $.extend(true, {}, defaults, options);
+    
+    
+    var default_data = {
+      cmd: cmd,
+      cw:  consolewidth, // ClientWidth/ConsoleWidth
+      'i': opts.intern
+    }
+    var data = $.extend(true, {}, default_data, opts.data);
+  
+    // Anfrage stellen
+    $.ajax({
+      type: "POST",
+      url: "shell.php",
+      data: data,
+      success: function(data) {        
+        if (!data.status) { // JSON Data?
+          data = {0:{
+            c: 'o',
+            m: 'php error: ' + data
+          }}
+          opts.error('php error: ' + data)
+        } else {
+          opts.success(data)
+        }        
+        $body.scrollTo('max')
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        if (textStatus != null) {
+          var errormsg;
+          if (textStatus == 'parsererror') {
+            errormsg = 'php error: ' + jqXHR.responseText
+          } else {
+            errormsg = 'ajax error: ' + jqXHR.statusText
+          }
+          opts.error(errormsg)
+          $body.scrollTo('max')
+        }        
+      }        
+    })
+  }
+  
   var execCmd = function(cmd) {
     var args = cmd.split(/\s/g)
   
@@ -153,23 +202,9 @@ $(document).ready(function(){
       return ;
     }
   
-    // Anfrage stellen
-    $.ajax({
-      type: "POST",
-      url: "shell.php",
-      data: {
-        cmd: cmd,
-        cw:  consolewidth, // ClientWidth/ConsoleWidth
-        'i': false
-      },
+    sendCmd(cmd, {
+      intern: false,
       success: function(data) {
-        if (!data.status) { // JSON Data?
-          data = {0:{
-            c: 'o',
-            m: 'php error: ' + data
-          }}
-        }
-        
         printOutput(data)          
         
         if (data.status == 'NOT_AUTHORIZED') {
@@ -178,25 +213,13 @@ $(document).ready(function(){
         }
       
         $shellname.html(data.shell)
-        
-        $body.scrollTo('max')
       },
-      error: function(jqXHR, textStatus, errorThrown) {
-        if (textStatus != null) {
-          var errormsg;
-          if (textStatus == 'parsererror') {
-            errormsg = 'php error: ' + jqXHR.responseText
-          } else {
-            errormsg = 'ajax error: ' + textStatus
-          }
-          printOutput({0:{
-            c: 'o',
-            m: errormsg
-          }})
-        }
-        
-        $body.scrollTo('max')
-      }        
+      error: function(error_msg) {
+        printOutput({0:{
+          c: 'o',
+          m: errormsg
+        }})
+      }
     })
   }
   
@@ -243,7 +266,7 @@ $(document).ready(function(){
   
   $input.focus()
     
-  // Login notwendig?
+  // Login needed?
   if ($('.login_bgd').css('display') != 'none') {    
     $('#user').focus();
     
@@ -257,7 +280,24 @@ $(document).ready(function(){
           o[a[i].name] = a[i].value
         }
         
-        clearAndExec('login', o)
+        sendCmd('login', {
+          intern: true,
+          data: o,
+          success: function(data) {
+            printOutput(data)          
+            
+            if (data.status == 'NOT_AUTHORIZED') {
+              location.href = '.'            
+              return ;
+            }
+          
+            $shellname.html(data.shell)
+            $('.login_bgd').hide();
+          },
+          error: function(error_msg) {
+            alert(errormsg) // TODO
+          }
+        })
       }
     });
   }
@@ -340,14 +380,8 @@ $(document).ready(function(){
         cmd = 'complete file ' + args[args.length-1]
       }
       
-      $.ajax({
-        type: "POST",
-        url: "shell.php",
-        data: {
-          'cmd': cmd,
-          cw:    consolewidth,
-          'i':   true
-        },
+      sendCmd(cmd, {
+        intern: true,
         success: function(data) {
           data = show_php_errors(data)
           
@@ -369,16 +403,8 @@ $(document).ready(function(){
           $input[0].selectionStart = $input[0].selectionEnd = $input.val().length
           updateInputLength()
         },
-        error: function(jqXHR, textStatus, errorThrown) {
-          if (textStatus != null) {
-            var errormsg;
-            if (textStatus == 'parsererror') {
-              errormsg = 'php error: ' + jqXHR.responseText
-            } else {
-              errormsg = 'ajax error: ' + textStatus
-            }
-            jscmd(errormsg)
-          }
+        error: function(msg) {
+          jscmd(errormsg)
         } 
       });      
       break;      
@@ -386,6 +412,117 @@ $(document).ready(function(){
     
     updateInputLength()
     complete_candidates = null
+  })
+  
+  var base = 1024;
+  var getReadableSpeedString = function(speedInKBytesPerSec) {
+	  var speed = speedInKBytesPerSec;
+	  speed = Math.round(speed * 10) / 10;
+	  if (speed < base) {
+		  return speed + "KB/s";
+	  }
+
+	  speed /= base;
+	  speed = Math.round(speed * 10) / 10;
+	  if (speed < base) {
+		  return speed + "MB/s";
+	  }
+
+	  return speedInBytesPerSec + "B/s";				
+  }
+
+  var getReadableFileSizeString = function(fileSizeInBytes) {
+	  var fileSize = fileSizeInBytes;
+	  if (fileSize < base) {
+		  return fileSize + "B";
+	  }
+
+	  fileSize /= base;
+	  fileSize = Math.round(fileSize);
+	  if (fileSize < base) {
+		  return fileSize + "KB";
+	  }
+	
+	  fileSize /= base;
+	  fileSize = Math.round(fileSize * 10) / 10;
+	  if (fileSize < base) {
+		  return fileSize + "MB";
+	  }
+
+	  return fileSizeInBytes + "B";
+  }
+
+  var getReadableDurationString = function(duration) {
+	  var elapsed = duration;
+
+	  var minutes, seconds;
+
+	  seconds = Math.floor(elapsed / 1000);
+	  minutes = Math.floor((seconds / 60));
+	  seconds = seconds - (minutes * 60);
+
+	  var str = "";
+	  if (minutes>0)
+		  str += minutes + "m";
+
+	  str += seconds + "s";
+	  return str;
+  }
+  
+  
+  $shellname.dropzone({
+    url : "upload.php",
+    printLogs : true,
+    uploadRateRefreshTime : 500,
+    numConcurrentUploads : 2,
+    //responseType: "json",
+    events : {      
+      UploadStarted : function(fileIndex, file) {
+        var $command = $('<pre class="shell_cmd">' + $shellname.html() + 'upload '+ file.name + '</pre>')
+        file.command = $command
+        $output.append($command)
+        printOutput({
+          0:{'c':'o', 'm':'File upload started; File size: ' + getReadableFileSizeString(file.size)} 
+        })
+      
+       /*var percDiv = $("<div></div>").css({
+        'background-color': 'orange',
+        'width': '0%',
+        'height': '20px'
+        }).attr("id", "perc" + fileIndex).wrap(processTd); 
+
+       var processTd = $("<td></td>").attr("class", "process").append(percDiv); 
+        */
+      },
+      
+      UploadFinished : function(fileIndex, file, duration) {
+        //$("#dropzone-info" + fileIndex).html("upload finished: " + file.fileName + " ("+getReadableFileSizeString(file.fileSize)+") in " + (getReadableDurationString(duration)));
+        /*$("#perc" + fileIndex).css({
+        'width': '100%',
+        'background-color': 'green'
+        });*/
+        console.log(file.name + ': upload finished');
+      },
+      
+      UploadProgress : function(fileIndex, file, newProgress, newSpeed) {
+        console.log(file.name + ': progress '+ Math.round(newProgress * 100) + '%');
+        //$("#perc" + fileIndex).css("width", Math.round(newProgress * 100) + "%");
+        //$("#dropzone-speed" + fileIndex).html(getReadableSpeedString(newSpeed))
+      },
+      
+      FilesDropped : function() {
+        //$("#droppedfiles table").empty();
+        $(this).dropzone('upload')
+      },
+      
+      Response : function(fileIndex, file, response) {
+        console.log(file.name + ': request finished');
+      },
+      
+      ResponseError : function(fileIndex, file, xhr, text_status) {
+        console.log(file.name + ': request failed');
+      },
+    }     
   })
 })
 

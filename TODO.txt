@@ -1,14 +1,20 @@
 
- * Authorization::createpasswd() mit Salt
- * complete über glob oder fnmatch
+ * Authorization::createpasswd() mit Salt und multihashing
  * complete in der Mitte von Befehl Möglich machen
  * (bessere) Behandlung wenn kein HOME Verzeichnis
  * commando über Control+C abbrechen
+ * no_command_found function
+ * in complete cmd fehlen die jscmds und die buildin commands
+ * php history ist nicht js history
+ * ausgabe einklappen bei doppelklick auf commandozeile
+ * upload_max_filesize bei login senden, damit keine zu großen daten später übertragen werden
+ * --help für commandos
  * Commandos:
     - cp
     - mv
     - mkdir
     - chmod
+    - chgrp
     - upload (upl)
     - download (downl)
     - passwd

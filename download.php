@@ -10,6 +10,7 @@
  *   - multi range support
  *   - DownThemAll! gives Server-Error when restarting large file download
  *   - multi etag support
+ *   - multi file support (with bounds)
  */
  
 // Disable Error Logging
@@ -165,22 +166,7 @@ function get_range($range_str, $filesize) {
   return array('high'=>$high, 'low'=>$low);
 }
 
-function return_bytes($val) {
-  $val = trim($val);
-  $last = strtolower($val[strlen($val)-1]);
-  switch($last) {
-  case 'g':
-    $val *= 1024;
-  case 'm':
-    $val *= 1024;
-  case 'k':
-    $val *= 1024;
-  }
-
-  return $val;
-}
-
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // init
 
 Authorization::init('s');
