@@ -9,7 +9,9 @@
  * ausgabe einklappen bei doppelklick auf commandozeile
  * upload_max_filesize,max_file_uploads bei login senden, damit keine zu großen daten später übertragen werden
  * --help für commandos
+ * edit Env::areFunctionsAvailable to requireFunctions
  * ausführung von lynx shell scripten
+ * rechtschreibprüfung ausschalten
  * Commandos:
     - php (to execute php commandos)
     - exec (when system is availble, no safe-mode)

@@ -9,23 +9,23 @@
 
 function remove_file($path) {
   if (is_writeable($path)) {
-    @unlink($path) or lfputs('e', $path.': Löschen nicht möglich');
+    @unlink($path) or lfputs('e', $path.': Error while removing');
   } else {
-    lfputs('e', $path.': Keine Berechtigung');
+    lfputs('e', $path.': Operation not permitted');
   }
 }
 
 function remove_dir($path) {
   if (is_writeable($path)) {
-    @rmdir($path) or lfputs('e', $path.': Löschen nicht möglich');
+    @rmdir($path) or lfputs('e', $path.': Error while removing');
   } else {
-    lfputs('e', $path.': Keine Berechtigung');
+    lfputs('e', $path.': Operation not permitted');
   }
 }
 
 function remove_dir_recursive($path) {
   if (!is_writeable($path)) {
-    lfputs('e', $path.': Keine Berechtigung');
+    lfputs('e', $path.': Operation not permitted');
     return ;
   } 
     
@@ -51,13 +51,13 @@ function remove_dir_recursive($path) {
 $opt = new CmdlnOptions($args);
 $files = $opt->getArguments();
 if (count($files) < 1) {
-  lerror($args[0].': fehlender Operand');
+  lerror($args[0].': missing operand');
 }
 
 if ($opt->isOptionSet('r', 'recursive')) {
   foreach ($files as $file) {
     if (!file_exists($file)) {
-      lfputs('e', $file.': Datei oder Verzeichnis nicht gefunden');
+      lfputs('e', $file.': No such file or directory');
     } else if (is_dir($file)) {
       remove_dir_recursive($file);
     } else {
@@ -67,9 +67,9 @@ if ($opt->isOptionSet('r', 'recursive')) {
 } else {
   foreach ($files as $file) {
     if (!file_exists($file)) {
-      lfputs('e', $file.': Datei oder Verzeichnis nicht gefunden');
+      lfputs('e', $file.': No such file or directory');
     } else if (is_dir($file)) {
-      lfputs('e', $file.': Ist ein Verzeichnis');
+      lfputs('e', $file.': Is a directory');
     } else {
       remove_file($file);
     }

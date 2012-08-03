@@ -288,11 +288,12 @@ $(document).ready(function(){
             
             if (data.status == 'NOT_AUTHORIZED') {
               location.href = '.'            
-              return ;
+              return
             }
           
             $shellname.html(data.shell)
-            $('.login_bgd').hide();
+            $('.login_bgd').hide()
+            $input.focus()
           },
           error: function(error_msg) {
             alert(errormsg) // TODO
@@ -312,7 +313,7 @@ $(document).ready(function(){
       case 68: /* Shift + d */
         event.preventDefault()
         execCmd('logout')
-        return;
+        return
       }
     }
   
@@ -467,8 +468,7 @@ $(document).ready(function(){
 
 	  str += seconds + "s";
 	  return str;
-  }
-  
+  }  
   
   $shellname.dropzone({
     url : "upload.php",
