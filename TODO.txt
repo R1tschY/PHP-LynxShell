@@ -7,16 +7,21 @@
  * in complete cmd fehlen die jscmds und die buildin commands
  * php history ist nicht js history
  * ausgabe einklappen bei doppelklick auf commandozeile
- * upload_max_filesize bei login senden, damit keine zu großen daten später übertragen werden
+ * upload_max_filesize,max_file_uploads bei login senden, damit keine zu großen daten später übertragen werden
  * --help für commandos
+ * ausführung von lynx shell scripten
  * Commandos:
+    - php (to execute php commandos)
+    - exec (when system is availble, no safe-mode)
     - cp
     - mv
     - mkdir
     - chmod
     - chgrp
-    - upload (upl)
+    - upload (upl) (no build-in when allow_url_fopen)
     - download (downl)
     - passwd
     - alias
+    - trash (move file to trash)
     - view (Bilder, HTML, ...)
+    - useradd

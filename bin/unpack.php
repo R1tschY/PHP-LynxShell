@@ -5,7 +5,6 @@
  *
  *  License: GNU General Public License Version 3
  */
- 
 
 ////////////////////////////////////////////////////////////////////////////////
 // RAR
@@ -61,7 +60,7 @@ function bunzip2($file) {
   $dest = pathinfo($file, PATHINFO_FILENAME);
   lputs("Unpacking ".$dest);  
   if (file_exists($dest) && !is_writable($dest))
-    lerror("$dest nicht schreibbar");
+    lerror("$dest not writable");
 
   $ext = pathinfo($dest, PATHINFO_EXTENSION);
   if ($ext == 'tar') {
@@ -76,7 +75,7 @@ function bunzip2($file) {
 
   while (!feof($bf)) {
     $bytes = fwrite($f, bzread($bf, BUFFER_SIZE), BUFFER_SIZE);
-    ($bytes !== FALSE) or lerror('Schreibfehler');
+    ($bytes !== FALSE) or lerror('Write error');
   }
 
   bzclose($bf);
@@ -122,7 +121,7 @@ function gunzip($file) {
   $dest = pathinfo($file, PATHINFO_FILENAME);
   lputs("Unpacking ".$dest);  
   if (file_exists($dest) && !is_writable($dest))
-    lerror("$dest nicht schreibbar");
+    lerror("$dest not writable");
 
   $ext = pathinfo($dest, PATHINFO_EXTENSION);
   if ($ext == 'tar') {
@@ -137,7 +136,7 @@ function gunzip($file) {
 
   while (!gzeof($gf)) {
     $bytes = fwrite($f, gzread($gf, BUFFER_SIZE), BUFFER_SIZE);
-    ($bytes !== FALSE) or lerror('Schreibfehler');
+    ($bytes !== FALSE) or lerror('Write error');
   }
 
   gzclose($gf);
@@ -214,9 +213,9 @@ if (!array_key_exists(0, $opt)) {
 }
 $file = &$opt[0];
 
-is_file($file) or lerror($file.' ist keine gültige Datei');
-is_readable($file) or lerror($file.' ist nicht lesbar');
-is_writable(getcwd()) or lerror(getcwd().' ist nicht schreibbar');
+is_file($file) or lerror($file.' is not a regular file');
+is_readable($file) or lerror($file.' is not readable');
+is_writable(getcwd()) or lerror(getcwd().' is not writable');
   
 $ext = pathinfo($file, PATHINFO_EXTENSION);
 switch ($ext) {
@@ -244,7 +243,7 @@ case 'tar':
   break;
   
 default:
-  lerror($file.' benutzt nicht unterstützte Komprimierung');
+  lerror($file.' uses noknown compression');
 }
 
 

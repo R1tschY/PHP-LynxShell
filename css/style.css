@@ -246,3 +246,9 @@ h1 {
   width: 100%;
 }
 
+#editor {
+  position: absolute;
+  width: 500px;
+  height: 400px;
+}
+
