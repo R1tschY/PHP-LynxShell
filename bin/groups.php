@@ -1,9 +1,6 @@
 <?php
 
-if (!Env::areFunctionsAvailable('posix_getgroups', 'posix_getgrgid')) {
-  Answer::addOutput('e', 'Function posix_getgroups or posix_getgrgid not available on this system.');
-  return ;
-}
+Env::requireFunctions('posix_getgroups', 'posix_getgrgid') or exit();
 
 $str = '';
 foreach(posix_getgroups() as $group) {

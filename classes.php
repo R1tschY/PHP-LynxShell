@@ -476,6 +476,39 @@ class Env {
     return count(array_intersect(self::$disable_functions, func_get_args())) == 0;
   }
   
+  public static function requireFunctions() {
+    foreach (func_get_args() as $func) {
+      if (function_exists($func) == FALSE) {
+        Answer::addOutput('e', 'error: required function "'.$funcs.'" not available on this system');
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+  
+  public static function requireClasses() {
+    foreach (func_get_args() as $class) {
+      if (class_exists($class) == FALSE) {
+        Answer::addOutput('e', 'error: required class "'.$class.'" not available on this system');
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+  
+  public static function requireExtensions() {
+    $args = func_get_args();
+    $exts = array_intersect(get_loaded_extensions(), $args);
+    if (count($exts) != count($args)) {
+      $diff = array_diff($exts, $args);
+      foreach ($diff as $ext) {
+        Answer::addOutput('e', 'error: required module "'.$ext.'" not available on this system');
+      }
+      return FALSE;
+    }
+    return TRUE;
+  }
+  
   public static function getHome() { return self::$home; }
 }
 

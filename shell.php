@@ -68,8 +68,7 @@ $args = $tmp;
 
 include("commands.php");
 
+register_shutdown_function('Answer::send');
 Commands::call($cmd, $args);
-
-Answer::send();
 
 ?>

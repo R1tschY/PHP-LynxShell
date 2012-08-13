@@ -207,11 +207,12 @@ function unzip($file){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-$opt = parse_cmdln($args);
-if (!array_key_exists(0, $opt)) {
+$opt = new CmdlnOptions($args);
+$files = $opt->getArguments();
+if (count(files) == 0) {
   $opt[0] = '.';
 }
-$file = &$opt[0];
+$file = &$files[0];
 
 is_file($file) or lerror($file.' is not a regular file');
 is_readable($file) or lerror($file.' is not readable');
