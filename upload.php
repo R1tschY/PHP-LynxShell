@@ -34,6 +34,7 @@ if (ini_get('file_uploads') == 0) {
   Answer::send();
 }
 
+// Get checksums
 if (array_key_exists('HTTP_X_CHECKSUM', $_SERVER)) {
   $checksums = explode(',', $_SERVER['HTTP_X_CHECKSUM']);
   if (count($checksums) != count($_FILES)) {

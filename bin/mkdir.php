@@ -14,7 +14,7 @@ if (count($dirs) < 1) {
 
 $parents = $opt->isOptionSet('p', 'parents');
 foreach ($dirs as $dir) {
-  @mkdir($dir, PERMISSIONS, $parents) or lerror("Unable to create $dir");
+  mkdir($dir, PERMISSIONS, $parents) or lerror("Unable to create $dir");
 }
  
 ?>

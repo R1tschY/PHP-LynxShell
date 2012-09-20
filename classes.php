@@ -80,7 +80,7 @@ function byte_size_string($val) {
 ////////////////////////////////////////////////////////////////////////////////
 function lerror($msg) {
   Answer::addOutput('e', $msg);
-  Answer::send();  
+  exit();  
 }
 
 function fatal_error($msg) {
@@ -88,7 +88,7 @@ function fatal_error($msg) {
   
   Answer::addOutput('e', $msg);
   Answer::setStatus('FATAL_ERROR');
-  Answer::send();  
+  exit();  
 }
 
 function handle_error($no, $str, $file, $line) {
@@ -120,7 +120,7 @@ function handle_error($no, $str, $file, $line) {
   Answer::addOutput($type, 'php '.$name.': '.strip_tags($str).' in '.$file.'('.$line.')');
   
   if ($type == 'e') {
-    Answer::send();
+    exit();
   }
   
   return TRUE;
@@ -368,7 +368,6 @@ function complete($args) {
     sort($candidates, SORT_STRING);
     print_in_table($candidates, $maxlen);
   }
-  Answer::send();
 }*/
 
 function _dirname($path) {
@@ -420,7 +419,6 @@ function complete($args) {
     Answer::setResult($prefix.strarray_find_prefix($candidates));
     print_in_table($candidates, 10); // FIXME
   }
-  Answer::send();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

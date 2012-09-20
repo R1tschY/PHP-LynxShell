@@ -193,7 +193,8 @@ Alternativen:
 	function progress(event) {
 		if (event.lengthComputable) {
 			var percentage = event.loaded / event.total;
-			var speed = (event.loaded - this.lastData) / (parseInt(event.timeStamp/1000) - this.lastTime); // in KB/sec
+			var elapsed = parseInt(event.timeStamp/1000)
+			var speed = (event.loaded - this.lastData) / (elapsed - this.lastTime); // in KB/sec
 
    		log(this.fileIndex + " --> " + Math.round(percentage * 100) + "% " + Math.round(speed) + "KB/s");
 

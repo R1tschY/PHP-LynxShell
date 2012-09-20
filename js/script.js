@@ -215,10 +215,7 @@ $(document).ready(function(){
         $shellname.html(data.shell)
       },
       error: function(error_msg) {
-        printOutput({0:{
-          c: 'o',
-          m: errormsg
-        }})
+        print(error_msg)
       }
     })
   }
@@ -247,10 +244,28 @@ $(document).ready(function(){
     return noerrors;
   }
   
+  var print = function(msg) {
+    printOutput({
+      0:{'c':'o', 'm':msg} 
+    })
+  }
+  
+  var printWarning = function(msg) {
+    printOutput({
+      0:{'c':'w', 'm':msg} 
+    })
+  }
+  
+  var printError = function(msg) {
+    printOutput({
+      0:{'c':'e', 'm':msg} 
+    })
+  }
+  
   var printOutput = function(output) {
     var out;
     var e;
-    $o = $('<div class="cmd_output"></div>')
+    var $o = $('<div class="cmd_output"></div>')
     for (var i = 0; output[i] != undefined; i++) {
       out = output[i]
       $o.append($('<pre class="output_'+out.c+'" />').text(out.m))      
@@ -472,6 +487,7 @@ $(document).ready(function(){
   
   $shellname.dropzone({
     url : "upload.php",
+    responseType: "text",
     printLogs : true,
     uploadRateRefreshTime : 500,
     numConcurrentUploads : 2,
@@ -481,9 +497,7 @@ $(document).ready(function(){
         var $command = $('<pre class="shell_cmd">' + $shellname.html() + 'upload '+ file.name + '</pre>')
         file.command = $command
         $output.append($command)
-        printOutput({
-          0:{'c':'o', 'm':'File upload started; File size: ' + getReadableFileSizeString(file.size)} 
-        })
+        print('File upload started; File size: ' + getReadableFileSizeString(file.size))
       
        /*var percDiv = $("<div></div>").css({
         'background-color': 'orange',
@@ -501,11 +515,11 @@ $(document).ready(function(){
         'width': '100%',
         'background-color': 'green'
         });*/
-        console.log(file.name + ': upload finished');
+        print(file.name + ': upload finished');
       },
       
       UploadProgress : function(fileIndex, file, newProgress, newSpeed) {
-        console.log(file.name + ': progress '+ Math.round(newProgress * 100) + '%');
+        print(file.name + ': progress '+ Math.round(newProgress * 100) + '%');
         //$("#perc" + fileIndex).css("width", Math.round(newProgress * 100) + "%");
         //$("#dropzone-speed" + fileIndex).html(getReadableSpeedString(newSpeed))
       },
@@ -516,11 +530,13 @@ $(document).ready(function(){
       },
       
       Response : function(fileIndex, file, response) {
-        console.log(file.name + ': request finished');
+        print(file.name + ': request finished');
+        // for Chrome: parse JSON later
+        printOutput(JSON.parse(response));
       },
       
       ResponseError : function(fileIndex, file, xhr, text_status) {
-        console.log(file.name + ': request failed');
+        print(file.name + ': request failed');
       },
     }     
   })
