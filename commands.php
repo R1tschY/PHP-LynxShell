@@ -11,6 +11,12 @@ function shell_login($args) {
     'Welcome at Lynx Shell @ '.$_SERVER['SERVER_NAME']."\n".
     'Server: '.$_SERVER['SERVER_SOFTWARE']."\n".
     'PHP: '.phpversion());
+    
+  Answer::setResult(array(
+    'upload_max_filesize' => ini_get('upload_max_filesize'),
+    'max_file_uploads' => ini_get('max_file_uploads'),
+    'post_max_size' => ini_get('post_max_size'),
+  ));
 }
 
 function logout($args) {
@@ -38,6 +44,10 @@ function history($args) {
   Answer::addOutput('o', implode("\n", $_SESSION['history']));
 }
 
+function echo__($args) {
+  Answer::addOutput('o', implode(" ", array_slice($args, 1)));
+}
+
 class Commands {
   static private $aliasies = array();
   static private $funcs = array(
@@ -47,7 +57,8 @@ class Commands {
     'cd' => 'cd',
     'pwd' => 'pwd',
     'history' => 'history',
-    'complete' => 'complete'
+    'complete' => 'complete',
+    'echo' => 'echo__'
   );
 
   static public function register($cmd, $func) {

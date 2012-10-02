@@ -285,6 +285,8 @@ function is_suffix($a, $suffix) {
 //   print_in_table
 ////////////////////////////////////////////////////////////////////////////////
 function print_in_table(&$data, $maxlen) {
+  if (count($data) == 0) return ;
+  
   $cw = filter_arrayvalue_int($_POST, 'cw');
   if ($cw !== FALSE) {
     if ($cw < 10) $cw = 10;
