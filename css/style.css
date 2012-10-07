@@ -177,6 +177,8 @@ h1 {
 }
 
 .shell_cmd {
+  font-family: "Ubuntu Mono","Consolas","Droid Sans Mono","Courier New",Monospace;
+  display: inline;
   padding: 5px 2px 7px 2px;
 }
 

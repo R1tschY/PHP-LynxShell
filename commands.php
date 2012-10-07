@@ -10,9 +10,26 @@ function shell_login($args) {
   Answer::addOutput('o', 
     'Welcome at Lynx Shell @ '.$_SERVER['SERVER_NAME']."\n".
     'Server: '.$_SERVER['SERVER_SOFTWARE']."\n".
-    'PHP: '.phpversion());
+    'PHP: '.phpversion()."\n\n");
+  
+  // display not avaiable features
+  if (ini_get('file_uploads') != '1') {
+    Answer::addOutput('w', 'File uploads not avaiable.');      
+  } else {
+    Answer::addOutput('o', 'Max upload file size: '.byte_size_string(return_bytes(ini_get('upload_max_filesize'))));
+  }
+  
+  if (ini_get('allow_url_fopen') != '1') {
+    Answer::addOutput('w', 'Download files from web not avaiable.');  
+  }
+  
+  if (ini_get('safe_mode') == '1') {
+    Answer::addOutput('w', 'Safe mode on.');  
+  }
     
+  // return features
   Answer::setResult(array(
+    'file_uploads' => ini_get('file_uploads'),
     'upload_max_filesize' => ini_get('upload_max_filesize'),
     'max_file_uploads' => ini_get('max_file_uploads'),
     'post_max_size' => ini_get('post_max_size'),

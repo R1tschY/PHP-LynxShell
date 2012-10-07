@@ -309,7 +309,7 @@ function print_in_table(&$data, $maxlen) {
         if ($j >= $items) break;
         $line .= str_pad(filter_arrayvalue_str($data, $j, ' '), $colwidth);
       }
-      Answer::addOutput('o', $line);
+      Answer::addOutput('o', $line."\n");
     }
   } else {
     Answer::addOutput('o', implode("\n",$data));

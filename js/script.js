@@ -145,7 +145,6 @@ $(document).ready(function(){
     }
     var opts = $.extend(true, {}, defaults, options);
     
-    
     var default_data = {
       cmd: cmd,
       cw:  consolewidth, // ClientWidth/ConsoleWidth
@@ -185,27 +184,38 @@ $(document).ready(function(){
     })
   }
   
+  var last_cmd_id = 0;
   var execCmd = function(cmd) {
     var args = cmd.split(/\s/g)
+    var cmd_id = ++last_cmd_id
   
-    $output.append('<pre class="shell_cmd">' + $shellname.html() + cmd + '</pre>')
+    var $div = $('<div class="cmd_wrapper" />')
+    var $cmd = $('<pre class="shell_cmd">' + $shellname.html() + cmd + '</pre>')
+    var $output_pre = $('<pre class="cmd_output" id="cmd_' + cmd_id + '" />')
+    var $loading = $('<img src="img/loader.gif" />').hide()
+    $div.append($cmd)
+    $div.append($loading)
+    $div.append($output_pre)
+    $output.append($div)
     resetShell()
   
     if (args[0] == '' || args.length == 0) {    
-      //jscmd('')
-      resetShell()
       return;
     }
     
     if ((method = jscmds[args[0]])) {
       method.apply(this, args.slice(1));
       return ;
-    }
+    }    
   
+    $loading.show();
+    $body.scrollTo('max')
+    
     sendCmd(cmd, {
       intern: false,
       success: function(data) {
-        printOutput(data)          
+        $loading.hide()
+        printOutput(data, cmd_id)          
         
         if (data.status == 'NOT_AUTHORIZED') {
           location.href = '.'            
@@ -215,6 +225,7 @@ $(document).ready(function(){
         $shellname.html(data.shell)
       },
       error: function(error_msg) {
+        $loading.hide()
         print(error_msg)
       }
     })
@@ -262,17 +273,22 @@ $(document).ready(function(){
     })
   }
   
-  var printOutput = function(output) {
+  var printOutput = function(output, cmd_id) {
     var out;
     var e;
-    var $o = $('<div class="cmd_output"></div>')
+    
+    if (cmd_id == null) {
+      cmd_id = last_cmd_id;
+    }
+    
+    var $o = $('#cmd_' + cmd_id)
     for (var i = 0; output[i] != undefined; i++) {
       out = output[i]
-      $o.append($('<pre class="output_'+out.c+'" />').text(out.m))      
+      $o.append($('<span class="output_'+out.c+'" />').text(out.m))      
     }
-    $o.appendTo($output)
   }
   
+  // console width
   var getConsoleWidth = function() {
     var charwidth = $shellname.width() / $shellname.text().length
     return Math.floor($shell.width() / charwidth)
@@ -281,7 +297,7 @@ $(document).ready(function(){
   
   $input.focus()
     
-  // Login needed?
+  // Login
   if ($('.login_bgd').css('display') != 'none') {    
     $('#user').focus();
     
@@ -318,10 +334,20 @@ $(document).ready(function(){
     });
   }
   
+  // image preloading
+  var images = [
+    'img/loader.gif'
+  ];
+  $(images).each(function() {
+    var image = $('<img />').attr('src', this);
+  });
+  
+  // 
   $('#main').click(function() {
     //$input.focus()
   })
  
+  // keyboard events
   $input.keydown(function(event) {
     if (event.ctrlKey) {
       switch (event.keyCode) {
