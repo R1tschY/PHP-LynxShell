@@ -9,10 +9,12 @@ define("DOWNLOAD_LIMIT", 2*1024); // 1kB/s
 define("DOWNLOAD_CHUNK_SIZE", 1024); // 100kB
 
 // buffer size for write/read files
-define("BUFFER_SIZE", 4096);
+define("BUFFER_SIZE", 65536);
 
 // Permission mode for new files/directories
 define("PERMISSIONS", 0777);
 
+
+return ;
 ?>
 

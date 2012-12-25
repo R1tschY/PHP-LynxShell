@@ -47,4 +47,5 @@ sort($files, SORT_STRING);
 
 print_in_table($files, $maxfilename);
 
+return ;
 ?>

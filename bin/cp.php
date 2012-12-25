@@ -6,6 +6,10 @@
  *  License: GNU General Public License Version 3
  */
  
+function is_url($url){
+	return filter_var($url, FILTER_VALIDATE_URL) !== FALSE;
+}
+ 
 /** from http://php.net/manual/de/function.copy.php#91256
  * Copy file or folder from source to destination, it can do
  * recursive copy as well and is very smart
@@ -32,6 +36,10 @@ function smart_copy($source, $dest, $options=array('folderPermission'=>0755,'fil
   $result=false;
  
   if (is_file($source)) {
+    if (!is_readable($source)) {
+      lerror($src.': not readable');
+    }
+  
     if ($dest[strlen($dest)-1] == '/' || is_dir($dest)) {
       if (!file_exists($dest)) {
         mkdir($dest, $options['folderPermission'], true) or lerror("Unable to create $dest");
@@ -44,6 +52,10 @@ function smart_copy($source, $dest, $options=array('folderPermission'=>0755,'fil
     chmod($__dest, $options['filePermission']);
      
   } elseif (is_dir($source)) {
+    if (!is_readable($source)) {
+      lerror($source.': not readable');
+    }  
+  
     if ($dest[strlen($dest)-1] == '/') {
       if ($source[strlen($source)-1] != '/') {  
         $dest = $dest.'/'.basename($source);
@@ -59,8 +71,6 @@ function smart_copy($source, $dest, $options=array('folderPermission'=>0755,'fil
     if (!file_exists($dest)) {
       mkdir($dest, $options['folderPermission'], true) or lerror("$dest: cannot create directory");  
     }
-    
-    lputs("$source -> $dest");
 
     $dirHandle = opendir($source);
     while ($file = readdir($dirHandle)) {
@@ -70,12 +80,23 @@ function smart_copy($source, $dest, $options=array('folderPermission'=>0755,'fil
         } else {
           $__dest = $dest.'/'.$file;
         }
-        lputs("$source/$file ||| $__dest");
         $result = smart_copy($source.'/'.$file, $__dest, $options);
       }
     }
     closedir($dirHandle);
-     
+
+  } elseif (is_url($source)) {
+    if ($dest[strlen($dest)-1] == '/' || is_dir($dest)) {
+      if (!file_exists($dest)) {
+        mkdir($dest, $options['folderPermission'], true) or lerror("Unable to create $dest");
+      }
+      $__dest = $dest.'/'.basename($source);
+    } else {
+      $__dest = $dest;
+    }
+    copy($source, $__dest) or Answer::addOutput('e', "$source: copying to '$__dest' failed");
+    chmod($__dest, $options['filePermission']);
+    
   } else {
     lerror("$source: not copyable file type");
   }
@@ -90,10 +111,6 @@ if (count($a) != 2) {
 
 $src = $a[0];
 $dest = $a[1];
-
-if (!is_readable($src)) {
-  lerror($src.': not readable');
-}
 
 smart_copy($src, $dest);
  

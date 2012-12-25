@@ -1,7 +1,6 @@
 <?php
 
 class Test {
-
   private $n;
   private $funcname;
   private $errors;
@@ -22,12 +21,12 @@ class Test {
   
   public function get_strresult() {
     if ($this->n == 0 || count($this->errors) == 0) {
-      return 'keine Fehler in '.$this->funcname . "!\n";
+      return 'no errors in '.$this->funcname . "!\n";
     }
     
-    $result = 'Fehler in '.$this->funcname .': '.count($this->errors).'/'.$this->n.PHP_EOL;
+    $result = 'errors in '.$this->funcname .': '.count($this->errors).'/'.$this->n.PHP_EOL;
     foreach ($this->errors as $error) {
-      $result .= "  ".$error['msg'].': IST: '.$error['ist'].' | SOLL: '.$error['soll'].PHP_EOL;
+      $result .= "  ".$error['msg'].': IS: '.$error['ist'].' | EXPECTED: '.$error['soll'].PHP_EOL;
     }
     return $result;
   }
@@ -46,31 +45,71 @@ function test_filter_arrayvalue_int() {
   $test->test(
     filter_arrayvalue_int($a, 'int'),
     23,
-    'int als String');
+    'int as string');
   $test->test(
     filter_arrayvalue_int($a, 'float'),
     FALSE,
-    'float als String');
+    'float as string');
   $test->test(
     filter_arrayvalue_int($a, 'str'),
     FALSE,
-    'String');
+    'string');
   $test->test(
     filter_arrayvalue_int($a, 'big'),
     FALSE,
-    'zu groß');
+    'to big');
   $test->test(
     filter_arrayvalue_int($a, 'no'),
     FALSE,
-    'nicht vorhanden');
+    'not existing');
     
   Answer::addOutput('o', $test->get_strresult());
 }
 
+function test_str_find_suffix() {
+  $test = new Test('str_find_suffix');
+  
+  $test->test(
+    str_find_suffix('alles', 'alles'),
+    'alles',
+    'complete string');
+  $test->test(
+    str_find_suffix('fast alles', 'alles'),
+    'alles',
+    'part of string');
+  $test->test(
+    str_find_suffix('fast alles.', 'alles!'),
+    FALSE,
+    'nothing');
+    
+  Answer::addOutput('o', $test->get_strresult());
+}
+
+function test_is_prefix() {
+  $test = new Test('is_prefix');
+  
+  $test->test(
+    is_prefix('alles', 'alles'),
+    TRUE,
+    'complete string');
+  $test->test(
+    is_prefix('fast alles', 'fast'),
+    TRUE,
+    'part of string');
+  $test->test(
+    is_prefix('fast alles.', 'alles'),
+    FALSE,
+    'nothing');
+  $test->test(
+    is_prefix('fast alles.', ''),
+    TRUE,
+    'empty prefix');
+    
+  Answer::addOutput('o', $test->get_strresult());
+}
 
 test_filter_arrayvalue_int();
+test_str_find_suffix();
+test_is_prefix();
   
-Answer::send();
-return ;
-
 ?>

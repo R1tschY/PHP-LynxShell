@@ -11,6 +11,7 @@ include("classes.php");
 
 Authorization::init('s');
 if (Authorization::is_auth()) {
+  Env::init();
   $shell = ShellSession::get();
   $shellname = $shell->getPrompt();
 } else {

@@ -7,24 +7,28 @@
  */
 
 function shell_login($args) {
-  Answer::addOutput('o', 
+  lputs(
     'Welcome at Lynx Shell @ '.$_SERVER['SERVER_NAME']."\n".
     'Server: '.$_SERVER['SERVER_SOFTWARE']."\n".
-    'PHP: '.phpversion()."\n\n");
+    'PHP: '.phpversion()."\n");
   
   // display not avaiable features
   if (ini_get('file_uploads') != '1') {
-    Answer::addOutput('w', 'File uploads not avaiable.');      
+    lwarning('File uploads not avaiable.');      
   } else {
-    Answer::addOutput('o', 'Max upload file size: '.byte_size_string(return_bytes(ini_get('upload_max_filesize'))));
+    lputs('Max upload file size: '.byte_size_string(return_bytes(ini_get('upload_max_filesize'))));
   }
   
   if (ini_get('allow_url_fopen') != '1') {
-    Answer::addOutput('w', 'Download files from web not avaiable.');  
+    lwarning('Downloading files from web not avaiable.');  
+  } else {
+    lputs('Downloading files from web is avaiable.');  
   }
   
   if (ini_get('safe_mode') == '1') {
-    Answer::addOutput('w', 'Safe mode on.');  
+    lwarning('Safe mode on.');  
+  } else {
+    lputs('Safe mode off.');  
   }
     
   // return features
@@ -38,7 +42,7 @@ function shell_login($args) {
 
 function logout($args) {
   Authorization::logout();
-  Answer::addOutput('o', 'logout');
+  lputs('logout');
   Answer::setStatus('NOT_AUTHORIZED');
 }
 
@@ -48,21 +52,21 @@ function cd($args) {
   
   global $shell;
   if (!$shell->setCwd($path)) {  
-    Answer::addOutput('e', $path.' ist kein gültiges Verzeichnis');
+    lerror($path.' ist kein gültiges Verzeichnis');
   }
 }
 
 function pwd($args) {
   global $shell;
-  Answer::addOutput('o', $shell->getCwd());
+  lputs($shell->getCwd());
 }
 
 function history($args) {
-  Answer::addOutput('o', implode("\n", $_SESSION['history']));
+  lputs(implode("\n", $_SESSION['history']));
 }
 
 function echo__($args) {
-  Answer::addOutput('o', implode(" ", array_slice($args, 1)));
+  lputs(implode(" ", array_slice($args, 1)));
 }
 
 class Commands {
@@ -97,7 +101,7 @@ class Commands {
       if (file_exists($cmdfile)) {
         include($cmdfile);
       } else {
-        Answer::addOutput('o', $cmd.': command not found');
+        lputs($cmd.': command not found');
         return ;
       }
     }

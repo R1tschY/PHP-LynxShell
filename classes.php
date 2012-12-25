@@ -5,7 +5,6 @@
  *
  *  License: GNU General Public License Version 3
  */
- 
 
 include('config.php');
 
@@ -67,34 +66,23 @@ function byte_size_string($val) {
   if ($val < 1024) {
     return $val . ' B';
   } else if ($val < 1024*1024) {
-    return $val . 'kB';
+    return ($val / (1024*1024)) . ' kiB';
   } else if ($val < 1024*1024*1024) {
-    return $val . 'MB';
+    return ($val / (1024*1024)) . ' MiB';
   } else {
-    return $val . 'GB';
+    return ($val / (1024*1024*1024)) . ' GiB';
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //   Error Handling
 ////////////////////////////////////////////////////////////////////////////////
-function lerror($msg) {
-  Answer::addOutput('e', $msg);
-  exit();  
-}
-
-function fatal_error($msg) {
-  Authorization::logout();
-  
-  Answer::addOutput('e', $msg);
-  Answer::setStatus('FATAL_ERROR');
-  exit();  
-}
 
 function handle_error($no, $str, $file, $line) {
   switch ($no) {
   case E_USER_NOTICE:
   case E_RECOVERABLE_ERROR:
+  case E_ERROR:
     $type = 'e';
     $name = 'error';
     break;
@@ -117,7 +105,7 @@ function handle_error($no, $str, $file, $line) {
     $name = 'unknown error';
   }
 
-  Answer::addOutput($type, 'php '.$name.': '.strip_tags($str).' in '.$file.'('.$line.')');
+  Answer::addOutput($type, 'php '.$name.': '.strip_tags(htmlspecialchars_decode($str)).' in '.$file.'('.$line.")\n");
   
   if ($type == 'e') {
     exit();
@@ -129,6 +117,7 @@ function handle_error($no, $str, $file, $line) {
 ////////////////////////////////////////////////////////////////////////////////
 //   Commandline Utils
 ////////////////////////////////////////////////////////////////////////////////
+
 class CmdlnOptions {
   private $opts;
   private $lopts;
@@ -178,7 +167,6 @@ class CmdlnOptions {
   }
 }
 
-
 function parse_cmdln($argv) {
   $result = array();
   
@@ -201,6 +189,7 @@ function parse_cmdln($argv) {
 ////////////////////////////////////////////////////////////////////////////////
 //   Input Utils
 ////////////////////////////////////////////////////////////////////////////////
+
 function filter_arrayvalue_bool($array, $key, $default = FALSE) {
   if (array_key_exists($key, $array)) {
     $value = $array[$key];
@@ -233,15 +222,24 @@ function filter_arrayvalue_str($array, $key, $default = FALSE) {
   return $default;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //   String Utils
 ////////////////////////////////////////////////////////////////////////////////
+
 function str_find_prefix($a, $b) {
   for ($ic=0; $ic<min(strlen($a),strlen($b)); $ic++) {
     if ($a[$ic] != $b[$ic]) break;
   }
   return substr($a, 0, $ic);
+}
+
+function str_find_suffix($a, $b) {
+  $alen = strlen($a);
+  $blen = strlen($b);
+  for ($ic=0; $ic<min($alen, $blen); $ic++) {
+    if ($a[$alen-$ic-1] != $b[$blen-$ic-1]) break;
+  }
+  return substr($a, $alen-$ic);
 }
 
 function strarray_find_prefix(&$data) {
@@ -280,10 +278,10 @@ function is_suffix($a, $suffix) {
   return (strcmp(substr($a, 0, -$suflen), $suffix) == 0);  
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //   print_in_table
 ////////////////////////////////////////////////////////////////////////////////
+
 function print_in_table(&$data, $maxlen) {
   if (count($data) == 0) return ;
   
@@ -309,68 +307,16 @@ function print_in_table(&$data, $maxlen) {
         if ($j >= $items) break;
         $line .= str_pad(filter_arrayvalue_str($data, $j, ' '), $colwidth);
       }
-      Answer::addOutput('o', $line."\n");
+      if (!empty($line)) lputs($line);
     }
   } else {
-    Answer::addOutput('o', implode("\n",$data));
+    lputs(implode("\n", $data));
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //   complete
 ////////////////////////////////////////////////////////////////////////////////
-/*
-function complete($args) {
-  $dir = filter_arrayvalue_str($args, 2);
-  if ($dir !== FALSE) {
-    $dir = dirname(expandPath($dir));
-  } else {
-    $dir = '.';
-  }
-  if ($args[1] == 'cmd') {
-    $_ = ($dir != '.')?$dir:'';
-    $dir = dirname(__FILE__).'/bin/'.$_;
-    $realdir = '';
-  } else if ($dir == '.') {
-    $realdir = '';
-  } else {
-    $realdir = $dir.'/';
-  }
-  $name = basename(filter_arrayvalue_str($args, 2));
-  $list = scandir($dir);
-  
-  $candidates = array();
-  $maxlen = 10;
-  foreach ($list as $element) {
-    if ($element == '.' || $element == '..') continue;
-    if (substr($element, 0, strlen($name)) == $name && (
-         ($args[1]=='file' || $args[1]=='cmd') ||
-         ($args[1]=='dir' && is_dir($realdir.$element)))) {
-      if ($args[1]=='cmd') {
-        if (is_file($dir.$element) && substr($element, -4) == '.php') {
-          $e = substr($element, 0, -4);
-          $candidates[] = $e;
-          if (($len = strlen($e)) > $maxlen) $maxlen = $len;
-        }
-      } else {
-        $candidates[] = $element;//.((is_dir($realdir.$element))?'/':'');
-        if (($len = strlen($element)) > $maxlen) $maxlen = $len;
-      }
-    }    
-  }
-  
-  if (count($candidates) < 1) {
-    Answer::setStatus('NOT_FOUND');
-  } elseif (count($candidates) == 1) {
-    $_ = ($args[1]=='dir')?'/':'';
-    Answer::setResult($realdir.$candidates[0].$_);
-  } elseif (count($candidates) > 1) {
-    Answer::setStatus('MORE_FOUND');
-    Answer::setResult(strarray_find_prefix($candidates));
-    sort($candidates, SORT_STRING);
-    print_in_table($candidates, $maxlen);
-  }
-}*/
 
 function _dirname($path) {
   $pos = strrpos($path, '/');
@@ -378,6 +324,14 @@ function _dirname($path) {
     return '';
   } else {
     return substr($path, 0, $pos);
+  }
+}
+
+function escape_spaces($path) {
+  if (strstr($path, ' ') !== FALSE) {
+    return '"'.$path.'"';
+  } else {
+    return $path;
   }
 }
 
@@ -414,12 +368,18 @@ function complete($args) {
     Answer::setStatus('NOT_FOUND');
     
   } elseif (count($candidates) == 1) {
-    Answer::setResult($prefix.$candidates[0]);
+    Answer::setResult(escape_spaces($prefix.$candidates[0]));
     
   } elseif (count($candidates) > 1) {
     Answer::setStatus('MORE_FOUND');
-    Answer::setResult($prefix.strarray_find_prefix($candidates));
-    print_in_table($candidates, 10); // FIXME
+    Answer::setResult(escape_spaces($prefix.strarray_find_prefix($candidates)));
+    
+    $maxlen = 5;
+    foreach ($candidates as $can) {
+      $len = strlen($can);
+      if ($len > $maxlen) $maxlen = $len;
+    }    
+    print_in_table($candidates, $maxlen);
   }
 }
 
@@ -442,18 +402,16 @@ class History {
 //   Env
 ////////////////////////////////////////////////////////////////////////////////
 class Env {
-  private static $home;
   private static $disable_functions;
   
   public static function init() {
     // home
     if (!array_key_exists('home', $_SESSION)) {  
-      self::$home = getenv("HOME");
-      if (empty($home)) {
-      
+      $home = getenv("HOME");
+      if (empty($home)) {      
         $user_dir = ini_get('user_dir');
         if (!empty($user_dir)) {
-          $_SESSION['home'] = $t[0];
+          $_SESSION['home'] = $user_dir;
           
         } else {      
           $open_basedir = ini_get('open_basedir');
@@ -464,9 +422,11 @@ class Env {
             $_SESSION['home'] = '';
           }
         }
+      } else {
+        $_SESSION['home'] = $home;
       }
-    }
-    self::$home = $_SESSION['home'];
+    }    
+    $_SESSION['home'] = rtrim($_SESSION['home'], '/');
     
     // disable_functions
     self::$disable_functions = explode(',', ini_get('disable_functions'));    
@@ -509,7 +469,7 @@ class Env {
     return TRUE;
   }
   
-  public static function getHome() { return self::$home; }
+  public static function getHome() { return $_SESSION['home']; }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -626,12 +586,29 @@ class Answer {
   }
 }
 
+function lerror($msg) {
+  Answer::addOutput('e', $msg.PHP_EOL);
+  exit();  
+}
+
+function fatal_error($msg) {
+  Authorization::logout();
+  
+  Answer::addOutput('e', $msg.PHP_EOL);
+  Answer::setStatus('FATAL_ERROR');
+  exit();  
+}
+
+function lwarning($str) {
+  Answer::addOutput('w', $str.PHP_EOL);
+}
+
 function lputs($str) {
-  Answer::addOutput('o', $str);
+  Answer::addOutput('o', $str.PHP_EOL);
 }
 
 function lfputs($c, $str) {
-  Answer::addOutput($c, $str);
+  Answer::addOutput($c, $str.PHP_EOL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

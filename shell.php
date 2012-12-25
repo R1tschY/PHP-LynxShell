@@ -21,18 +21,28 @@ if (!Authorization::is_auth()) {
 
 // System initialisieren
 Env::init();
+register_shutdown_function('Answer::send');
 
 // Eingabewerte parsen
 $request = array();
 if (!array_key_exists('cmd', $_POST)) {
   if (!array_key_exists('cmd', $_GET)) {
-    Answer::addOutput('o', 'Fehler: cmd-Parameter fehlt');
-    Answer::send();
+    lerror('Fehler: cmd-Parameter fehlt');
   }
   $cmdln = trim($_GET['cmd']);
 } else {
   $cmdln = trim($_POST['cmd']);
 }
+
+if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc() == 1) {
+  $mqs = strtolower(ini_get('magic_quotes_sybase'));
+  if (empty($mqs) || $mqs == 'off') {
+    $cmdln = stripslashes($cmdln);
+  } else {
+    $cmdln = str_replace("''", "'", $cmdln);
+  }
+}
+
 $intern = filter_arrayvalue_bool($_POST, 'i', false);
 $clientwidth = filter_arrayvalue_int($_POST, 'cw', -1);
 
@@ -40,35 +50,45 @@ $clientwidth = filter_arrayvalue_int($_POST, 'cw', -1);
 $shell = ShellSession::get();
 
 // arguments
-$args = preg_split("/[\s]+/", $cmdln);
-$cmd = &$args[0];
+preg_match_all('/"(?:\\\\.|[^\\\\"])*"|\S+/', $cmdln, $matches);
+$args = array_slice($matches[0], 1);
+$cmd = $matches[0][0];
+foreach ($args as &$arg) {
+  if ($arg[0] == '"') {
+    if (substr($arg, -1) == '"') {
+      $arg = substr($arg, 1, -1);
+    } else {
+      lerror('missing closing quote');
+    }
+  } elseif (substr($arg, -1) == '"') {
+    lerror('missing opening quote');
+  }
+}
 
 // filter 'eval' commands:
-if (!preg_match('#^[a-zA-Z0-9_-]+$#', $cmd)) {
-  Answer::addOutput('o', $cmd.': command not found');
-  Answer::send();
+if (!preg_match('/^[a-zA-Z0-9_-]+$/', $cmd)) {
+  lerror($cmd.': command not found');
 }
 
 if (empty($cmd)) {
-  Answer::addOutput('o', '');
-  Answer::send();
+  lputs('');
+  exit();
 }
 
 // expand arguments
-$tmp = array($args[0]);
-foreach (array_slice($args, 1) as $arg) {
-  $all = glob($arg);
+$tmp = array($cmd);
+foreach ($args as $a) {
+  $all = glob($a);
   if (!empty($all)) {
     $tmp = array_merge($tmp, $all);
   } else {
-    $tmp[] = $arg;
-  } 
+    $tmp[] = $a;
+  }
 }
 $args = $tmp;
 
 include("commands.php");
 
-register_shutdown_function('Answer::send');
 Commands::call($cmd, $args);
 
 ?>
