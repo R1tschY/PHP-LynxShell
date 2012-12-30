@@ -439,21 +439,17 @@ class Env {
   public static function requireFunctions() {
     foreach (func_get_args() as $func) {
       if (function_exists($func) == FALSE) {
-        Answer::addOutput('e', 'error: required function "'.$funcs.'" not available on this system');
-        return FALSE;
+        lerror('error: required function "'.$func.'" not available on this system');
       }
     }
-    return TRUE;
   }
   
   public static function requireClasses() {
     foreach (func_get_args() as $class) {
       if (class_exists($class) == FALSE) {
-        Answer::addOutput('e', 'error: required class "'.$class.'" not available on this system');
-        return FALSE;
+        lerror('error: required class "'.$class.'" not available on this system');
       }
     }
-    return TRUE;
   }
   
   public static function requireExtensions() {
@@ -462,11 +458,9 @@ class Env {
     if (count($exts) != count($args)) {
       $diff = array_diff($exts, $args);
       foreach ($diff as $ext) {
-        Answer::addOutput('e', 'error: required module "'.$ext.'" not available on this system');
+        lerror('error: required module "'.$ext.'" not available on this system');
       }
-      return FALSE;
     }
-    return TRUE;
   }
   
   public static function getHome() { return $_SESSION['home']; }

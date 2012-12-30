@@ -1,8 +1,7 @@
 <?php
 
 if (count($args) != 2) {
-  lputs('usage: ' . $args[0].' seconds');
-  return ;
+  lerror('usage: ' . $args[0].' seconds');
 }
 
 sleep($args[1]);

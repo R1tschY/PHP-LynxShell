@@ -8,6 +8,6 @@ foreach(posix_getgroups() as $group) {
   $str .= $g['name'];
 }
 
-Answer::addOutput('o', $str);
+lputs($str);
 
 ?>

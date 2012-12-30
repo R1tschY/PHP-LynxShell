@@ -39,8 +39,7 @@ if (is_dir($dir)) {
     closedir($dh);
   }
 } else {
-  Answer::addOutput('e', $dir.' ist kein gültiges Verzeichnis');
-  return ;
+  lerror($dir.' ist kein gültiges Verzeichnis');
 }
 
 sort($files, SORT_STRING);

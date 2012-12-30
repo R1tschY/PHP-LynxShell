@@ -1,9 +1,6 @@
 <?php
 
-if (!Env::areFunctionsAvailable('posix_uname')) {
-  Answer::addOutput('e', 'Function posix_uname not available on this system.');
-  return ;
-}
+Env::requireFunctions('posix_uname');
 
 if (count($args) < 2) {
   $args[] = '-s';
@@ -40,6 +37,6 @@ if ($m) {
   $result[] = $uname['machine'];
 }
 
-Answer::addOutput('o', implode(' ', $result));
+lputs(implode(' ', $result));
 
 ?>
