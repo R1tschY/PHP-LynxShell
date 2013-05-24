@@ -1,6 +1,6 @@
 <?php
 
-Authorization::$userpasswd = array('admin'=>'8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918');
+Authorization::$userpasswd = array('admin'=>'|_1oX:307b83311f95ddbd1c2b50e0a8e791614511572d3e2cd739aa229afb7101675b');
 
 // Limit for downloading files
 define("DOWNLOAD_LIMIT", 2*1024); // 1kB/s

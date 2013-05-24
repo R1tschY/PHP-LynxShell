@@ -617,12 +617,25 @@ class Authorization {
   public static $init = false;
 
   public static function createpasswd($passwd) {
-    return hash('sha256', $passwd);
+    // create salt
+    $salt = '';
+    for ($i = 0; $i < 5; $i++) {
+      $salt .= chr(rand(35, 127));
+    }
+    
+    return self::getpasswd($passwd, $salt);
+  }
+  
+  private static function getpasswd($passwd, $salt) {
+    return $salt.':'.hash('sha256', hash('sha256', $passwd.$salt).$salt);
   }
   
   public static function checkpasswd($user, $passwd) {
-    return array_key_exists($user, self::$userpasswd) &&
-      (self::$userpasswd[$user] == self::createpasswd($passwd));
+    if (array_key_exists($user, self::$userpasswd)) {
+      $saltpasswd = explode(':', self::$userpasswd[$user], 2);
+      return self::$userpasswd[$user] == self::getpasswd($passwd, $saltpasswd[0]);
+    }
+    return false;
   }
 
   public static function init($name, $timeout=null) {
